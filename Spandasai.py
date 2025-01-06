@@ -23,7 +23,10 @@ from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 
 # create an LLM by instantiating OpenAI object, and passing API token
+<<<<<<< Updated upstream
 llm = OpenAI(api_token="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")
+=======
+>>>>>>> Stashed changes
 
 # create PandasAI object, passing the LLM
 pandas_ai = PandasAI(llm)
