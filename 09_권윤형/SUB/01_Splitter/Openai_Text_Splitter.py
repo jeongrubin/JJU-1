@@ -1,4 +1,4 @@
-OPENAI_API_KEY = 'OPENAI_API_KEY'
+OPENAI_API_KEY = 'API_KEY'
 
 with open("c:/Users/kyh97/OneDrive - 전주대학교/전주대/2024 2학기/비트캠프/12월27일/appendix-keywords.txt", encoding="utf-8") as f:
   file = f.read()
