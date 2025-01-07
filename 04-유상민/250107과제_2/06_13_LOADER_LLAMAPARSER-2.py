@@ -2,7 +2,6 @@ UPSTAGE_API_KEY = ''
 
 import os
 
-
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["LANGCHAIN_API_KEY"] = ""
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
