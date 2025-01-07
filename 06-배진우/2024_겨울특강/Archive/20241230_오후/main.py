@@ -12,7 +12,7 @@ st.title("Gemini 맞춤법 검사기 ✨")
 st.write("Gemini Pro 모델을 사용하여 맞춤법 및 문법 오류를 수정합니다.")
 
 # API 키 설정 (환경 변수에서 가져오기)
-GOOGLE_API_KEY = os.getenv("AIzaSyDq6DsEk_f4sJWmlGPYC1Msxme1zNTwAh0")
+GOOGLE_API_KEY = os.getenv("")
 if not GOOGLE_API_KEY:
     st.error("API 키를 환경 변수 GOOGLE_API_KEY에 설정해주세요.")
     st.stop()

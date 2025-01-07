@@ -10,3 +10,10 @@ langchain-community
 re
 shutil
 langchain_openai
+python-dotenv
+llama-index-readers-file
+llama-parse
+llama-index-core
+langchain-teddynote
+langchain-upstage
+langchain-teddynote
