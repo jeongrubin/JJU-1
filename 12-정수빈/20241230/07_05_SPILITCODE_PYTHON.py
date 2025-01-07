@@ -6,7 +6,7 @@ PYTHON_CODE = """
 import google.generativeai as genai
 
 # API 설정
-genai.configure(api_key="AIzaSyAUw7PRvxZgtMcP-5EDPA_5uF_63rRbG3g")
+genai.configure(api_key="")
 
 # 생성 설정
 generation_config = {
