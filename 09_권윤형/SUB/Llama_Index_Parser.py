@@ -50,3 +50,29 @@ docs = [doc.to_langchain_format() for doc in parsed_docs]
 print(docs)
 print(len(docs))
 print(docs[0].page_content)
+
+# Parsing Instruction
+
+parsing_instruction = (
+    '너가 알아서 parsing 해.'
+)
+
+parser = LlamaParse(
+    use_vendor_mulitmodal_model = True,
+    vendor_multimodal_model_name = 'openai-gpt4o',
+    vendor_multimodal_api = OPENAI_API_KEY,
+    api_key=LLAMA_CLOUD_API_KEY,
+    result_type='markdown',
+    language='eng',
+    parsing_instruction=parsing_instruction,
+    #skip_diagonal_text = True,
+    #page_seperator='\n======================\n',
+)
+
+parsed_docs = documents.load_data(file_path='/content/data/Attention is all you need.pdf')
+
+docs = [doc.to_langchain_format() for doc in parsed_docs]
+
+print(docs)
+print(len(docs))
+print(docs[0].page_content)
