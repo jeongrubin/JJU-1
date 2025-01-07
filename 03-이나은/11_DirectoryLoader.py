@@ -7,4 +7,4 @@ loader =  DirectoryLoader(
 )
 
 docs = loader.load()
-docs
+print(docs)
