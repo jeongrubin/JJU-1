@@ -1,0 +1,12 @@
+TextLoader
+DirectoryLoader
+PyPDFLoader
+UnstructuredCSVLoader
+xml.etree.ElementTree
+pandas
+os
+bs4
+langchain-community
+re
+shutil
+langchain_openai
