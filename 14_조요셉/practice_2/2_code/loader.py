@@ -4,8 +4,10 @@
 - 여러가지 LangChain에 Loader들을 함수로 정의한 파일
 """
 
-from langchain_teddynote.document_loaders import HWPLoader, UnstructuredExcelLoader, Docx2txtLoader, UnstructuredWordDocumentLoader, TextLoader, JSONLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain_teddynote.document_loaders import HWPLoader
+from langchain_community.document_loaders import Docx2txtLoader, UnstructuredWordDocumentLoader, TextLoader, JSONLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader, UnstructuredCSVLoader
+from langchain_community.document_loaders import UnstructuredExcelLoader
 from langchain_community.document_loaders.python import PythonLoader
 
 # 한글 문서 로드
