@@ -8,6 +8,7 @@ from langchain_community.document_loaders import JSONLoader
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
 from langchain_community.document_loaders import UnstructuredHTMLLoader
 from langchain_community.document_loaders import BSHTMLLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 FILE_PATH = '/workspaces/JJU/09_권윤형/practice_2/1_usedData/광화사.txt'
 
@@ -78,6 +79,19 @@ def load_md(FILE_PATH):
     docs_md = loader_md.load()
     return docs_md
 
+def split_pdf(content):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size = 150,                             # 청크 크기 설정
+        chunk_overlap = 0,                            # 청크 간 중복 문자 수 설정
+        length_function = len,                        # 문자열 길이 계산 함수 지정
+        is_separator_regex= False,                    #구분자로 정규식을 사용할지 여부를 설정
+    )
+
+    texts_recursive = text_splitter.create_documents([content])
+    
+    return texts_recursive
+
+
 
 def load_file(FILE_PATH):
     _, file_extension = os.path.splitext(FILE_PATH)
@@ -100,10 +114,44 @@ def load_file(FILE_PATH):
     else:
         raise ValueError(f"Unsupported file type: {file_extension}")
 
+def process_file(FILE_PATH, content):
+    _, file_extension = os.path.splitext(FILE_PATH)
+    file_extension = file_extension.lower()
+
+    # Mapping file extensions to loader functions
+    splitters = {
+        '.pdf': split_pdf,
+        '.hwp': split_hwp,
+        '.csv': split_csv,
+        '.xlsx': split_excel,
+        '.txt': split_txt,
+        '.json': split_json,
+        '.md': split_md,
+        '.html': split_html,
+    }
+
+    if file_extension in splitters:
+        return splitters[file_extension](content)
+    else:
+        raise ValueError(f"Unsupported file type: {file_extension}")
+
+    # # 분할 단계
+    # try:
+    #     split_results = split_content(file_extension, content)
+    #     for splitter_name, chunks in split_results.items():
+    #         print(f"\n=== Split by {splitter_name} ===")
+    #         for chunk in chunks:
+    #             print(chunk)
+    # except ValueError as e:
+    #     print(f"Error during splitting: {e}")
+
+
 # Example usage
 #file_path = "example.pdf"  # Replace with your file path
+
 try:
     content = load_file(FILE_PATH)
-    print(content)
+    split_content = process_file(FILE_PATH, content)
+    print(split_content)
 except ValueError as e:
     print(e)
