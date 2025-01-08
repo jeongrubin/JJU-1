@@ -4,3 +4,5 @@ llama-index-readers-file
 python-dotenv
 nest-asyncio
 langchain_community
+langchain-teddynote
+langchain-upstage
