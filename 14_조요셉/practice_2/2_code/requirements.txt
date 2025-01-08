@@ -3,7 +3,6 @@ langchain_teddynote
 langchain-text-splitters
 langchain_experimental
 langchain_openai
-langchain-text-splitters 
 
 unstructured[md]
 unstructured
@@ -11,3 +10,8 @@ openpyxl
 docx2txt
 nltk
 tiktoken
+
+pymupdf
+pdfminer.six
+pdfplumber
+rapidocr-onnxruntime

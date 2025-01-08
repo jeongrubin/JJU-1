@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def charcter_text_splitter(separator="\n\n", chunk_size=250, chunk_overlap=50):
+def charcter_text_splitter(separator="\n\n", chunk_size=100, chunk_overlap=30):
     text_splitter = CharacterTextSplitter(
         # 텍스트를 분할할 때 사용할 구분자를 지정합니다. 기본값은 "\n\n"입니다.
         separator=separator,
@@ -20,10 +20,8 @@ def charcter_text_splitter(separator="\n\n", chunk_size=250, chunk_overlap=50):
     )
     return text_splitter
 
-def recursive_character_text_splitter(separator="\n\n", chunk_size=250, chunk_overlap=50):
+def recursive_character_text_splitter(chunk_size=100, chunk_overlap=30):
     text_splitter = RecursiveCharacterTextSplitter(
-        # 텍스트를 분할할 때 사용할 구분자를 지정합니다. 기본값은 "\n\n"입니다.
-        separator=separator,
         # 분할된 텍스트 청크의 최대 크기를 지정합니다.
         chunk_size=chunk_size,
         # 분할된 텍스트 청크 간의 중복되는 문자 수를 지정합니다.
@@ -31,10 +29,8 @@ def recursive_character_text_splitter(separator="\n\n", chunk_size=250, chunk_ov
     )
     return text_splitter
 
-def token_text_splitter(separator="\n\n", chunk_size=250, chunk_overlap=50):
+def token_text_splitter(chunk_size=100, chunk_overlap=30):
     text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-        # 텍스트를 분할할 때 사용할 구분자를 지정합니다. 기본값은 "\n\n"입니다.
-        separator=separator,
         # 분할된 텍스트 청크의 최대 크기를 지정합니다.
         chunk_size=chunk_size,
         # 분할된 텍스트 청크 간의 중복되는 문자 수를 지정합니다.
@@ -46,7 +42,7 @@ def semanticchunker():
     text_splitter = SemanticChunker(OpenAIEmbeddings())
     return text_splitter
 
-def python_splitter(chunk_size=250, chunk_overlap=50):
+def python_splitter(chunk_size=100, chunk_overlap=30):
     python_splitter = RecursiveCharacterTextSplitter.from_language(
     language=Language.PYTHON, chunk_size=chunk_size, chunk_overlap=chunk_overlap
 )
