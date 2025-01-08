@@ -23,6 +23,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from sklearn.datasets import load_files
 from dotenv import load_dotenv
+import json
 
 # .env 파일 로드
 load_dotenv()
@@ -127,7 +128,12 @@ def load_with_text(file_path):
     return docs[0].page_content[:1000]
 
 def load_with_json(file_path):
-    loader = JSONLoaderClass(file_path)
+    # jq_schema를 '.'로 설정하면 전체 JSON 콘텐츠를 로드합니다
+    loader = JSONLoaderClass(
+        file_path=file_path,
+        jq_schema='.',
+        text_content=False
+    )
     docs = loader.load()
     return docs[0].page_content[:1000]
 
@@ -181,43 +187,78 @@ def split_texts(file_type, loader_results):
         raise ValueError(f"{file_type}에 적합한 TextSplitter가 없습니다.")
 
     split_results = []
-    for splitter in splitters:
+    
+    # Markdown 파일인 경우 직접 파일을 읽고 분할
+    if file_type == "Markdown":
+        with open(loader_results, 'r', encoding='utf-8') as file:
+            markdown_content = file.read()
+            
+        markdown_splitter = MarkdownHeaderTextSplitter(
+            headers_to_split_on=[
+                ("#", "Header 1"),
+                ("##", "Header 2"),
+                ("###", "Header 3")
+            ]
+        )
         try:
-            # 각 splitter의 결과를 개별적으로 저장
-            if isinstance(loader_results, list):
-                for text in loader_results:
+            split_results.append({
+                'splitter': 'MarkdownHeaderTextSplitter',
+                'result': markdown_splitter.split_text(markdown_content)
+            })
+            # 헤더가 없는 경우를 위한 백업 splitter
+            recursive_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+            split_results.append({
+                'splitter': 'RecursiveCharacterTextSplitter',
+                'result': recursive_splitter.split_text(markdown_content)
+            })
+        except Exception as e:
+            print(f"Markdown splitting 중 오류 발생: {str(e)}")
+    else:
+        # 다른 파일 타입들은 기존 방식대로 처리
+        for splitter in splitters:
+            try:
+                if isinstance(loader_results, list):
+                    for text in loader_results:
+                        split_results.append({
+                            'splitter': splitter.__class__.__name__,
+                            'result': splitter.split_text(text)
+                        })
+                else:
                     split_results.append({
                         'splitter': splitter.__class__.__name__,
-                        'result': splitter.split_text(text)
+                        'result': splitter.split_text(loader_results)
                     })
-            else:
-                split_results.append({
-                    'splitter': splitter.__class__.__name__,
-                    'result': splitter.split_text(loader_results)
-                })
-        except Exception as e:
-            print(f"Splitter {splitter.__class__.__name__} 처리 중 오류 발생: {str(e)}")
-            continue
+            except Exception as e:
+                print(f"Splitter {splitter.__class__.__name__} 처리 중 오류 발생: {str(e)}")
+                continue
     
     return split_results
 
 # 5단계: GPT 모델로 분석
 def analyze_with_gpt(file_type, loader_results_and_split_results):
     model = ChatOpenAI(
-        model="gpt-4",
+        model="gpt-4o",
         max_tokens=2048,
         temperature=0.7
     )
 
     loader_results, split_results = loader_results_and_split_results
 
+    # 사용된 loader 정보 추출
+    used_loader = "Unknown"
+    if file_type in loader_mapping:
+        used_loader = loader_mapping[file_type][0].__name__
+
     # 사용된 splitter 목록 생성
     splitter_list = "\n".join([f"- {result['splitter']}" for result in split_results])
 
     prompt_template = PromptTemplate(
-        input_variables=["file_type", "splitter_list", "split_results"],
+        input_variables=["file_type", "used_loader", "splitter_list", "split_results"],
         template="""
 당신은 파일 분석 전문가입니다. {file_type} 파일에 대한 분석을 수행해주세요.
+
+실제 사용된 Loader:
+{used_loader}
 
 사용 가능한 Splitter 목록:
 {splitter_list}
@@ -227,8 +268,8 @@ def analyze_with_gpt(file_type, loader_results_and_split_results):
 
 다음 형식으로 상세한 분석 결과를 제공해주세요:
 
-1. 가장 적합한 Loader와 그 이유:
-[이 파일 형식에 가장 적합한 Loader를 선택하고 그 이유를 설명]
+1. 사용된 Loader 분석:
+[실제 사용된 {used_loader}의 성능과 적합성 평가]
 
 2. 가장 적합한 Splitter와 그 이유:
 [사용된 Splitter 중 가장 효과적인 것을 선택하고 그 이유를 설명]
@@ -254,6 +295,7 @@ def analyze_with_gpt(file_type, loader_results_and_split_results):
 
     result = chain.run({
         "file_type": file_type,
+        "used_loader": used_loader,
         "splitter_list": splitter_list,
         "split_results": str(split_results)[:1000]  # 결과 일부만 전달
     })
@@ -263,8 +305,8 @@ def analyze_with_gpt(file_type, loader_results_and_split_results):
 def format_final_output(input_type, file_type, loader_results, splitter_results, gpt_result):
     output = {
         "Input File Type": file_type,
-        "Selected Loader": None,
-        "Selected Loader Reasoning": None,
+        "Used Loader": None,  # "Selected Loader" 대신 "Used Loader"로 변경
+        "Loader Analysis": None,  # 새로운 필드 추가
         "Selected Splitter": None,
         "Selected Splitter Reasoning": None,
         "Analysis Summary": None,
@@ -275,17 +317,16 @@ def format_final_output(input_type, file_type, loader_results, splitter_results,
     # GPT 결과를 줄 단위로 분리
     result_lines = gpt_result.split('\n')
     
-    # 각 섹션 추출
     current_section = None
     section_content = []
     
     for line in result_lines:
-        if line.startswith("1. 가장 적합한 Loader"):
+        if line.startswith("1. 사용된 Loader"):  # 섹션 이름 변경
             current_section = "loader"
             continue
         elif line.startswith("2. 가장 적합한 Splitter"):
             if current_section == "loader":
-                output["Selected Loader"] = "\n".join(section_content).strip()
+                output["Loader Analysis"] = "\n".join(section_content).strip()
             current_section = "splitter"
             section_content = []
             continue
@@ -311,8 +352,8 @@ def format_final_output(input_type, file_type, loader_results, splitter_results,
             section_content.append(line.strip())
     
     # 마지막 섹션 처리
-    if current_section == "assessment":
-        output["Quality Assessment"] = "\n".join(section_content).strip()
+    if file_type in loader_mapping:
+            output["Used Loader"] = loader_mapping[file_type][0].__name__
     
     return output
 
@@ -320,8 +361,11 @@ def print_formatted_output(output):
     print("\n=== Final Analysis Results ===")
     print(f"\nInput File Type: {output['Input File Type']}")
     
-    print("\nSelected Loader:")
-    print(output['Selected Loader'])
+    print("\nUsed Loader:")
+    print(output['Used Loader'])
+    
+    print("\nLoader Analysis:")
+    print(output['Loader Analysis'])
     
     print("\nSelected Splitter:")
     print(output['Selected Splitter'])
@@ -334,10 +378,8 @@ def print_formatted_output(output):
     
     print("\nQuality Assessment:")
     print(output['Quality Assessment'])
-
-# 메인 실행
+# 메인 실행 부분도 수정
 if __name__ == "__main__":
-
     input_type = detect_input_type(input_data)
     file_type = detect_file_type(input_data) if input_type == "FILE" else "URL"
     
@@ -345,15 +387,20 @@ if __name__ == "__main__":
     print(f"2. 파일 타입: {file_type}")
     
     try:
-        # Loader 적용
-        if input_type == "FILE":
-            loader_results = loader_mapping[file_type][0](input_data)  # 첫 번째 적용 가능한 loader 사용
-            print(f"3. Loader 적용 완료: {loader_mapping[file_type][0].__name__}")
-        elif input_type == "URL":
-            loader_results = load_with_webbase(input_data)
-            print("3. WebBase Loader 적용 완료")
+        # Markdown 파일인 경우 loader 단계 건너뛰기
+        if file_type == "Markdown":
+            loader_results = input_data  # 파일 경로를 그대로 전달
+            print("3. Markdown 파일: Loader 단계 생략")
         else:
-            raise ValueError("지원하지 않는 입력 유형입니다.")
+            # 기존 loader 로직
+            if input_type == "FILE":
+                loader_results = loader_mapping[file_type][0](input_data)
+                print(f"3. Loader 적용 완료: {loader_mapping[file_type][0].__name__}")
+            elif input_type == "URL":
+                loader_results = load_with_webbase(input_data)
+                print("3. WebBase Loader 적용 완료")
+            else:
+                raise ValueError("지원하지 않는 입력 유형입니다.")
         
         # Splitter 적용
         print("4. Splitter 적용 중...")
