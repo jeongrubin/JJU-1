@@ -10,7 +10,8 @@ from langchain_community.document_loaders import UnstructuredHTMLLoader
 from langchain_community.document_loaders import BSHTMLLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-FILE_PATH = '/workspaces/JJU/09_권윤형/practice_2/1_usedData/광화사.txt'
+#FILE_PATH = '/workspaces/JJU/09_권윤형/practice_2/1_usedData/광화사.txt'
+FILE_PATH = '/workspaces/JJU/09_권윤형/practice_2/1_usedData/금융감독원_공지사항.pdf'
 
 def load_pdf(FILE_PATH):
     # 각 로더 초기화
@@ -88,7 +89,7 @@ def split_pdf(content):
     )
 
     texts_recursive = text_splitter.create_documents([content])
-    
+
     return texts_recursive
 
 
@@ -121,13 +122,13 @@ def process_file(FILE_PATH, content):
     # Mapping file extensions to loader functions
     splitters = {
         '.pdf': split_pdf,
-        '.hwp': split_hwp,
-        '.csv': split_csv,
-        '.xlsx': split_excel,
-        '.txt': split_txt,
-        '.json': split_json,
-        '.md': split_md,
-        '.html': split_html,
+        # '.hwp': split_hwp,
+        # '.csv': split_csv,
+        # '.xlsx': split_excel,
+        # '.txt': split_txt,
+        # '.json': split_json,
+        # '.md': split_md,
+        # '.html': split_html,
     }
 
     if file_extension in splitters:
@@ -151,7 +152,8 @@ def process_file(FILE_PATH, content):
 
 try:
     content = load_file(FILE_PATH)
-    split_content = process_file(FILE_PATH, content)
-    print(split_content)
+    print(content)
+    #split_content = process_file(FILE_PATH, content)
+    #print(split_content)
 except ValueError as e:
     print(e)
