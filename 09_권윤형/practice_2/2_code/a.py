@@ -1,8 +1,15 @@
+import os
 from langchain_community.document_loaders import PyPDFLoader, PyMuPDFLoader, PyPDFium2Loader, PDFMinerLoader, PDFPlumberLoader
-from langchain.document_loaders import CSVLoader
+from langchain_community.document_loaders import CSVLoader
 from langchain_teddynote.document_loaders import HWPLoader
 from langchain_community.document_loaders import UnstructuredExcelLoader
 from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import JSONLoader
+from langchain_community.document_loaders import UnstructuredMarkdownLoader
+from langchain_community.document_loaders import UnstructuredHTMLLoader
+from langchain_community.document_loaders import BSHTMLLoader
+
+FILE_PATH = '/workspaces/JJU/09_권윤형/practice_2/1_usedData/광화사.txt'
 
 def load_pdf(FILE_PATH):
     # 각 로더 초기화
@@ -49,19 +56,31 @@ def load_txt(FILE_PATH):
     return docs_txt
 
 
-def load_txt(FILE_PATH):
-    loader_txt = TextLoader(FILE_PATH)
-    docs_txt = loader_txt.load()
-    return docs_txt
+def load_json(FILE_PATH):
+    loader_json = JSONLoader(FILE_PATH)
+    docs_json = loader_json.load()
+    return docs_json
 
-def load_txt(FILE_PATH):
-    loader_txt = TextLoader(FILE_PATH)
-    docs_txt = loader_txt.load()
-    return docs_txt
+def load_html(FILE_PATH):
+    loader_html = UnstructuredHTMLLoader(FILE_PATH)
+    loader_bshtml = BSHTMLLoader(FILE_PATH)
+
+    docs_html = loader_html.load()
+    docs_bshtml = loader_bshtml.load()
+
+    return {
+        'HTMLLoader': docs_html,
+        'BSHTMLLoader': docs_bshtml,
+    }
+
+def load_md(FILE_PATH):
+    loader_md = UnstructuredMarkdownLoader(FILE_PATH)
+    docs_md = loader_md.load()
+    return docs_md
 
 
-def load_file(file_path):
-    _, file_extension = os.path.splitext(file_path)
+def load_file(FILE_PATH):
+    _, file_extension = os.path.splitext(FILE_PATH)
     file_extension = file_extension.lower()
 
     # Mapping file extensions to loader functions
@@ -77,14 +96,14 @@ def load_file(file_path):
     }
 
     if file_extension in loaders:
-        return loaders[file_extension](file_path)
+        return loaders[file_extension](FILE_PATH)
     else:
         raise ValueError(f"Unsupported file type: {file_extension}")
 
 # Example usage
-file_path = "example.pdf"  # Replace with your file path
+#file_path = "example.pdf"  # Replace with your file path
 try:
-    content = load_file(file_path)
+    content = load_file(FILE_PATH)
     print(content)
 except ValueError as e:
     print(e)
