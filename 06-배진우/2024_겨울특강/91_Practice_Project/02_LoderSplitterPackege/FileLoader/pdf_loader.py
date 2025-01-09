@@ -14,7 +14,7 @@ from langchain_community.document_loaders import (
 class PDFLoader:
     @staticmethod
     def load_PyPDF(file_path: str):
-        # 파일 경로 설정
+        # load_PyPDF 로더 인스턴스 생성
         loader = PyPDFLoader(file_path)
         docs = loader.load()
         return docs
