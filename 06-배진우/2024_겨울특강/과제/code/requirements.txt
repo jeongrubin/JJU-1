@@ -10,3 +10,4 @@ llama-parse
 llama-index-core
 langchain-teddynote
 langchain-upstage
+langchain-openai
