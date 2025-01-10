@@ -39,7 +39,7 @@ if prompt := st.chat_input("검색할 주제를 입력하세요:"):
     )
 
     summarize_agent = Agent(
-        instructions="You're a summarize agent to summarize research agent's findings. Answer in Korean",
+        instructions="You're a summarize agent to summarize research agent's findings. summarize the content in more detail and with more specifics. Answer in Korean",
     )
 
     agents = Agents(agents=[research_agent, summarize_agent])
