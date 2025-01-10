@@ -29,3 +29,5 @@ if st.button("연구 및 요약 시작"):
     
     st.subheader("요약:")
     st.write(summarize_agent.response)  # 'response'에 요약된 내용이 담길 것으로 가정
+
+print("hi")
