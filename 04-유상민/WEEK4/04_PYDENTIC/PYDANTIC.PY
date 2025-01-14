@@ -47,7 +47,7 @@ FORMAT:
 prompt = prompt.partial(format=parser.get_format_instructions())
 
 # LLM 초기화
-llm = ChatOpenAI(model='gpt-4', temperature=0, openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model='gpt-4o', temperature=0)
 
 # 체인 생성
 chain = prompt | llm | parser
@@ -67,28 +67,17 @@ response = chain.invoke(
         "format": parser.get_format_instructions(),
     }
 )
-print(response)
+
 # Pydantic 모델을 딕셔너리 형태로 변환
-email_summary_dict = response.dict()
+email_summary_dict = response.dict()  # response를 딕셔너리로 변환
 
 # 결과 출력
 print("Extracted Information:")
 for key, value in email_summary_dict.items():
     print(f"{key}: {value}")
 
-# # 결과 저장
-# output_file = 'reply.md'
-# with open(output_file, 'w', encoding='utf-8') as file:
-#     file.write("**Summary**:\n")
-#     for key, value in email_summary_dict.items():
-#         file.write(f"{key}: {value}\n")
-
-# print(f"Reply saved to {output_file}.")
-
-email_summary_dict = response.dict()
-
 # 결과를 JSON 형식으로 출력
-print(json.dumps(email_summary_dict, indent=4))
+print(json.dumps(email_summary_dict, ensure_ascii=False, indent=4))
 
 # 결과를 JSON 파일로 저장
 output_file = 'reply.json'
